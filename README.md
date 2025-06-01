@@ -29,5 +29,6 @@ cd calculator
 ```
 .
 ├── index.html       # Main HTML file
-└── icon.png         # browser logo
+├── README.md        # Instruction markdown file
+└── icon.png         # Browser logo
 ```
