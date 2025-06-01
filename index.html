@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="icon.png" type="image/png" />
+  <title>Simple Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .calculator {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    .display {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    .history {
+      color: gray;
+      font-size: 14px;
+    }
+    .result {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    button {
+      font-size: 20px;
+      padding: 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-op {
+      background: #1976d2;
+      color: white;
+    }
+    .btn-ac {
+      background: #d32f2f;
+      color: white;
+      grid-column: span 2;
+    }
+    .btn-eq {
+      background: #388e3c;
+      color: white;
+      grid-row: span 2;
+    }
+    .btn-zero {
+      grid-column: span 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display">
+      <div class="history" id="history"></div>
+      <div class="result" id="display">0</div>
+    </div>
+    <div class="buttons">
+      <button class="btn-ac" onclick="clearCalculator()">AC</button>
+      <button class="btn-op" onclick="setOperator('/')">/</button>
+      <button class="btn-op" onclick="setOperator('*')">*</button>
+
+      <button onclick="inputDigit('7')">7</button>
+      <button onclick="inputDigit('8')">8</button>
+      <button onclick="inputDigit('9')">9</button>
+      <button class="btn-op" onclick="setOperator('-')">-</button>
+
+      <button onclick="inputDigit('4')">4</button>
+      <button onclick="inputDigit('5')">5</button>
+      <button onclick="inputDigit('6')">6</button>
+      <button class="btn-op" onclick="setOperator('+')">+</button>
+
+      <button onclick="inputDigit('1')">1</button>
+      <button onclick="inputDigit('2')">2</button>
+      <button onclick="inputDigit('3')">3</button>
+      <button class="btn-eq" onclick="calculateResult()">=</button>
+
+      <button class="btn-zero" onclick="inputDigit('0')">0</button>
+      <button onclick="inputDecimal()">.</button>
+    </div>
+  </div>
+
+  <script>
+    let displayValue = '0';
+    let historyDisplay = '';
+    let firstOperand = null;
+    let operator = null;
+    let waitingForSecondOperand = false;
+
+    function updateDisplay() {
+      document.getElementById('display').textContent = displayValue;
+      document.getElementById('history').textContent = historyDisplay;
+    }
+
+    function inputDigit(digit) {
+      if (displayValue === 'Error') return;
+      if (waitingForSecondOperand) {
+        displayValue = digit;
+        waitingForSecondOperand = false;
+      } else {
+        displayValue = displayValue === '0' ? digit : displayValue + digit;
+      }
+      updateDisplay();
+    }
+
+    function inputDecimal() {
+      if (waitingForSecondOperand) {
+        displayValue = '0.';
+        waitingForSecondOperand = false;
+        updateDisplay();
+        return;
+      }
+      if (!displayValue.includes('.')) {
+        displayValue += '.';
+        updateDisplay();
+      }
+    }
+
+    function clearCalculator() {
+      displayValue = '0';
+      historyDisplay = '';
+      firstOperand = null;
+      operator = null;
+      waitingForSecondOperand = false;
+      updateDisplay();
+    }
+
+    function setOperator(nextOperator) {
+      const inputValue = parseFloat(displayValue);
+      if (operator && waitingForSecondOperand) {
+        operator = nextOperator;
+        historyDisplay = firstOperand + ' ' + operator;
+        updateDisplay();
+        return;
+      }
+
+      if (firstOperand == null) {
+        firstOperand = inputValue;
+      } else if (operator) {
+        const result = performCalculation(firstOperand, inputValue, operator);
+        if (result === 'Error') {
+          displayValue = 'Error';
+          updateDisplay();
+          return;
+        }
+        displayValue = String(result);
+        firstOperand = result;
+      }
+      waitingForSecondOperand = true;
+      operator = nextOperator;
+      historyDisplay = firstOperand + ' ' + operator;
+      updateDisplay();
+    }
+
+    function calculateResult() {
+      if (operator == null || waitingForSecondOperand) return;
+      const inputValue = parseFloat(displayValue);
+      const result = performCalculation(firstOperand, inputValue, operator);
+      historyDisplay += ' ' + inputValue + ' =';
+      displayValue = result === 'Error' ? 'Error' : String(result);
+      firstOperand = null;
+      operator = null;
+      waitingForSecondOperand = true;
+      updateDisplay();
+    }
+
+    function performCalculation(a, b, op) {
+      switch (op) {
+        case '+': return a + b;
+        case '-': return a - b;
+        case '*': return a * b;
+        case '/': return b === 0 ? 'Error' : a / b;
+        default: return b;
+      }
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>
